@@ -1,0 +1,40 @@
+project xmlns=httpmaven.apache.orgPOM4.0.0
+         xmlnsxsi=httpwww.w3.org2001XMLSchema-instance
+         xsischemaLocation=httpmaven.apache.orgPOM4.0.0 httpmaven.apache.orgxsdmaven-4.0.0.xsd
+  modelVersion4.0.0modelVersion
+  groupIdcom.examplegroupId
+  artifactIdNetherDeathLimiterartifactId
+  version1.0-SNAPSHOTversion
+
+  repositories
+    !-- Dépôt officiel de PaperMC --
+    repository
+      idpapermcid
+      urlhttpsrepo.papermc.iorepositorymaven-publicurl
+    repository
+  repositories
+
+  dependencies
+    !-- Dépendance Paper API  compile-only (fournie par le serveur à l’exécution) --
+    dependency
+      groupIdio.papermc.papergroupId
+      artifactIdpaper-apiartifactId
+      version1.21.11-R0.1-SNAPSHOTversion
+      scopeprovidedscope
+    dependency
+  dependencies
+
+  build
+    plugins
+      plugin
+        groupIdorg.apache.maven.pluginsgroupId
+        artifactIdmaven-compiler-pluginartifactId
+        version3.11.0version
+        configuration
+          source21source
+          target21target
+        configuration
+      plugin
+    plugins
+  build
+project
