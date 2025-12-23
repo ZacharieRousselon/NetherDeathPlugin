@@ -6,97 +6,92 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Criteria;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-/**
- * A simple Paper/Spigot plugin for Paper 1.21.10 that counts the number of times
- * a player dies in the Nether. Once a player dies twice in the Nether, they
- * are marked as banned from entering the Nether by setting a value on the
- * "NetherBanni" scoreboard objective. Command blocks or other datapacks can
- * then react to this scoreboard value (e.g. by repelling the player from
- * portals or teleporting them away). The plugin does not handle portal
- * repulsion or teleportation itself – it simply manages the death counter and
- * banned flag.
- */
 public final class NetherDeathLimiter extends JavaPlugin implements Listener {
 
-    // Scoreboard objectives for counting Nether deaths and tracking bans.
     private Objective deathsObjective;
     private Objective banObjective;
 
     @Override
     public void onEnable() {
-        // Obtain the main scoreboard. This is persistent across server restarts.
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         Scoreboard board = manager.getMainScoreboard();
 
-        // Ensure the death counter objective exists. It uses the "dummy"
-        // criterion so we can increment it manually.
+        // 1. Gestion de l'objectif de morts
         deathsObjective = board.getObjective("MortsNether");
+        
+        // Si l'objectif existe mais n'est pas "dummy", on le supprime pour le recréer proprement
+        if (deathsObjective != null && !deathsObjective.getCriteria().equals("dummy")) {
+            getLogger().warning("L'ancien objectif MortsNether n'était pas 'dummy'. Suppression et recréation.");
+            deathsObjective.unregister();
+            deathsObjective = null;
+        }
+
         if (deathsObjective == null) {
             deathsObjective = board.registerNewObjective(
                     "MortsNether",
-                    "dummy",
+                    "dummy", 
                     ChatColor.RED + "Morts Nether");
-            deathsObjective.setDisplayName(ChatColor.RED + "Morts Nether");
         }
 
-        // Ensure the ban flag objective exists. Also a dummy criterion.
+        // 2. Gestion de l'objectif de ban
         banObjective = board.getObjective("NetherBanni");
         if (banObjective == null) {
             banObjective = board.registerNewObjective(
                     "NetherBanni",
-                    "dummy",
+                    "dummy", 
                     ChatColor.DARK_RED + "Nether Banni");
-            banObjective.setDisplayName(ChatColor.DARK_RED + "Nether Banni");
         }
 
-        // Register this class as an event listener.
         getServer().getPluginManager().registerEvents(this, this);
-
-        getLogger().info("NetherDeathLimiter enabled.");
+        getLogger().info("NetherDeathLimiter activé avec succès.");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("NetherDeathLimiter disabled.");
+        getLogger().info("NetherDeathLimiter désactivé.");
     }
 
-    /**
-     * Handles player death events. If a player dies in the Nether, their
-     * MortsNether score is incremented. Once it reaches 2 or more the plugin
-     * sets the NetherBanni score to 1. Command blocks or datapacks can
-     * interpret this flag to lock the player out of the Nether.
-     *
-     * @param event the death event
-     */
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        World world = player.getWorld();
-        if (world.getEnvironment() == World.Environment.NETHER) {
-            // Increment the player's Nether death counter.
-            Score deathScore = deathsObjective.getScore(player.getName());
-            int current = deathScore.getScore();
-            deathScore.setScore(current + 1);
+        // On récupère le monde via la location exacte du joueur au moment de la mort
+        World world = player.getLocation().getWorld(); 
 
-            // Check if the player has died twice or more in the Nether.
-            if (current + 1 >= 2) {
+        // LOG DE DEBUG : Regardez votre console quand vous mourrez
+        getLogger().info("Mort détectée pour " + player.getName() + " dans le monde : " + world.getName() + " (Environment: " + world.getEnvironment() + ")");
+
+        // Vérification stricte : Est-ce le NETHER ?
+        if (world.getEnvironment() == World.Environment.NETHER) {
+            
+            Score deathScore = deathsObjective.getScore(player.getName());
+            int newScore = deathScore.getScore() + 1;
+            
+            // On applique le nouveau score
+            deathScore.setScore(newScore);
+            getLogger().info("Mort Nether validée. Nouveau score pour " + player.getName() + ": " + newScore);
+
+            // Vérification du BAN (2 morts ou plus)
+            if (newScore >= 2) {
                 Score banScore = banObjective.getScore(player.getName());
+                // On ne met le tag que si le joueur ne l'a pas déjà
                 if (banScore.getScore() < 1) {
-                    // Set their ban flag to 1. Do not decrease if already banned.
                     banScore.setScore(1);
-                    player.sendMessage(ChatColor.DARK_RED + "Vous avez utilisé vos deux vies dans le Nether." +
-                            ChatColor.GRAY + " Vous ne pouvez plus retourner dans le Nether.");
+                    player.sendMessage(ChatColor.DARK_RED + "ATTENTION : Vous avez atteint la limite de morts dans le Nether.");
+                    player.sendMessage(ChatColor.GRAY + "Vous êtes désormais banni de cette dimension.");
+                    getLogger().info("Joueur " + player.getName() + " banni du Nether (Tag NetherBanni mis à 1).");
                 }
             }
+        } else {
+            getLogger().info("Mort ignorée par le compteur Nether (car nous sommes dans " + world.getEnvironment() + ")");
         }
     }
 }
