@@ -1,40 +1,63 @@
-project xmlns=httpmaven.apache.orgPOM4.0.0
-         xmlnsxsi=httpwww.w3.org2001XMLSchema-instance
-         xsischemaLocation=httpmaven.apache.orgPOM4.0.0 httpmaven.apache.orgxsdmaven-4.0.0.xsd
-  modelVersion4.0.0modelVersion
-  groupIdcom.examplegroupId
-  artifactIdNetherDeathLimiterartifactId
-  version1.0-SNAPSHOTversion
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  repositories
-    !-- Dépôt officiel de PaperMC --
-    repository
-      idpapermcid
-      urlhttpsrepo.papermc.iorepositorymaven-publicurl
-    repository
-  repositories
+  <modelVersion>4.0.0</modelVersion>
 
-  dependencies
-    !-- Dépendance Paper API  compile-only (fournie par le serveur à l’exécution) --
-    dependency
-      groupIdio.papermc.papergroupId
-      artifactIdpaper-apiartifactId
-      version1.21.11-R0.1-SNAPSHOTversion
-      scopeprovidedscope
-    dependency
-  dependencies
+  <groupId>com.example</groupId>
+  <artifactId>NetherDeathLimiter</artifactId>
+  <version>1.0.0</version>
+  <name>NetherDeathLimiter</name>
+  <description>Paper plugin - count Nether deaths and set NetherBanni</description>
 
-  build
-    plugins
-      plugin
-        groupIdorg.apache.maven.pluginsgroupId
-        artifactIdmaven-compiler-pluginartifactId
-        version3.11.0version
-        configuration
-          source21source
-          target21target
-        configuration
-      plugin
-    plugins
-  build
-project
+  <properties>
+    <java.version>21</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>papermc</id>
+      <url>https://repo.papermc.io/repository/maven-public/</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+      <version>1.21.11-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
