@@ -1,6 +1,0 @@
-name: NetherDeathLimiter
-version: 1.0
-main: com.example.netherdeathlimiter.NetherDeathLimiter
-api-version: 1.21
-description: Plugin pour Paper 1.21.10 build 129 qui compte les morts dans le Nether et marque les joueurs bannis après deux morts.
-author: BareonAdmin
